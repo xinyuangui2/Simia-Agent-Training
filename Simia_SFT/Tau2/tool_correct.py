@@ -759,12 +759,12 @@ def main():
         print("Or: python3 tool_correct.py <input_file> <output_file> (use default tools_spec)")
         input_file = sys.argv[1]
         output_path = sys.argv[2]
-        tools_spec_path = "Simia_SFT/Tau2/tools_seed.json"
+        tools_spec_path = "tools_seed.json"
     elif len(sys.argv) == 2:
         print("Usage: python3 tool_correct.py <input_file> <output_file> [tools_spec_path]")
         sys.exit(1)
     else:
-        tools_spec_path = "Simia_SFT/Tau2/tools_seed.json"
+        tools_spec_path = "tools_seed.json"
         input_file = ""
 
         input_dir = os.path.dirname(input_file)

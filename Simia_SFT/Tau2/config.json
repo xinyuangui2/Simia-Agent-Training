@@ -1,5 +1,5 @@
 {
-  "azure_endpoint": "",
+  "azure_endpoint": "https://ai-m365researchefficientaieus2212654625773.cognitiveservices.azure.com/",
   "api_version": "2025-04-01-preview",
   "deployment": "gpt-5",
   "output_settings": {
@@ -8,7 +8,7 @@
     "save_intermediate": true,
     "backup_existing": true
   },
-  "sample_data_path": "Simia_SFT/Tau2/APIGen_5k_preprocessed.json",
+  "sample_data_path": "APIGen_5k_preprocessed.json",
   "gpt_log_settings": {
     "enable_logging": true,
     "log_file": "gpt_log_tau2_10_gpt5_{timestamp}.jsonl"

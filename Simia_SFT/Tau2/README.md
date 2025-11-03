@@ -12,8 +12,6 @@ Unzip the pre-processed seed data
 ```python
 cd Simia_SFT/Tau2
 unzip APIGen_5k_preprocessed_zip.zip
-cd ..
-cd ..
 ```
 
 
@@ -39,7 +37,7 @@ Edit `config.json` to set generation parameters:
 Use `main.py` to generate Agent multi-turn conversation data. Features include checkpoint resumption, log saving, and progress tracking by default.
 
 ```bash
-# Use default configuration, will enter interactive mode
+# Use default configuration
 python main.py
 
 # Specify configuration file
@@ -51,6 +49,8 @@ python main.py --force-new
 # Check progress
 python main.py --status
 ```
+
+**Customizing Prompts**: You can customize the conversation generation prompts by editing `Simia-Agent-Training/Simia_SFT/Tau2/utils/conversation_generator.py`
 
 
 ### 3. Post-processing Pipeline
@@ -71,6 +71,25 @@ Processing workflow includes:
 3. `tool_correct.py` - Correct tool calls
 4. `remove_think_tag.py` - Remove thinking tags
 5. `replace_system_prompt_Hermes.py` - Replace system prompts
+
+
+### 4. SFT Training on Processed Dataset
+
+The processed dataset can be directly used for supervised fine-tuning with frameworks like [LLaMA Factory](https://github.com/hiyouga/LLaMA-Factory).
+
+To use with LLaMA Factory, add an entry to `dataset_info.json`:
+
+```json
+"tau2_10_gpt": {
+    "file_name": "Simia-Agent-Training/Simia_SFT/Tau2/output/tau2_10_gpt5_processed.json",
+    "formatting": "sharegpt",
+    "columns": {
+        "messages": "conversations",
+        "system": "system"
+    }
+}
+```
+
 
 
 

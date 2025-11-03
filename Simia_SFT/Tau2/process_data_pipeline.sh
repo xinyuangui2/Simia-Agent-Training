@@ -72,27 +72,10 @@ SCRIPTS=(
     "$SCRIPT_DIR/tool2hermes.py"
     "$SCRIPT_DIR/tool_correct.py"
     "$SCRIPT_DIR/remove_think_tag.py"
-    "    "$SCRIPT_DIR/replace_system_prompt_Hermes.py"
+    "$SCRIPT_DIR/replace_system_prompt_Hermes.py"
 )
 
 # Validate all scripts exist
-for script in "${SCRIPTS[@]}"; do
-    if [ ! -f "$script" ]; then
-        log_error "Processing script does not exist: $script"
-        exit 1
-    fi
-done
-
-# Check config file (optional)
-if [ ! -f "$CONFIG_FILE" ]; then
-    log_warning "Config file does not exist: $CONFIG_FILE, will try to use default config"
-fi
-
-# Store intermediate file paths
-INTERMEDIATE_FILES=()"
-)
-
-
 for script in "${SCRIPTS[@]}"; do
     if [ ! -f "$script" ]; then
         log_error "Processing script does not exist: $script"
@@ -151,23 +134,23 @@ for i in "${!SCRIPTS[@]}"; do
     log_info "Output: $CURRENT_OUTPUT"
     
     case "$SCRIPT_NAME" in
-        "fix_arguments_only.py")
+        "fix_arguments.py")
             python3 "$SCRIPT" "$CURRENT_INPUT" "$CURRENT_OUTPUT"
             ;;
         "tool2hermes.py")
             python3 "$SCRIPT" --input "$CURRENT_INPUT" --output "$CURRENT_OUTPUT"
             ;;
-        "tool_use_correct_v6.py")
+        "tool_correct.py")
             if [ -f "$CONFIG_FILE" ]; then
                 python3 "$SCRIPT" "$CURRENT_INPUT" "$CURRENT_OUTPUT" "$CONFIG_FILE"
             else
                 python3 "$SCRIPT" "$CURRENT_INPUT" "$CURRENT_OUTPUT"
             fi
             ;;
-        "add_and_fix_reasoning.py")
+        "remove_think_tag.py")
             python3 "$SCRIPT" "$CURRENT_INPUT" "$CURRENT_OUTPUT"
             ;;
-        "replace_system_promptv1.py")
+        "replace_system_prompt_Hermes.py")
             python3 "$SCRIPT" "$CURRENT_INPUT" "$CURRENT_OUTPUT"
             ;;
         *)
