@@ -61,8 +61,8 @@ custom_envs:
     env_config:
       api_type: "azure"  # or "openai"
       train_data_path: "./APIGen_5k_processed.json"
-      deployment: "gpt-5"  # for Azure
-      openai_model: "gpt-4o"  # for OpenAI
+      deployment: "gpt-5"  # for Azure API
+      openai_model: "gpt-5"  # for OpenAI API
       max_simulation_steps: 100
 ```
 
