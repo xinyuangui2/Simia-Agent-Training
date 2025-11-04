@@ -24,7 +24,15 @@ class ShareGPTGenerator:
         if not self.config_manager.validate_config():
             raise ValueError("Configuration validation failed")
         
-        self.azure_config = self.config_manager.get_azure_config()
+        # Get API type and corresponding configuration
+        self.api_type = self.config_manager.get_api_type()
+        if self.api_type == 'azure':
+            self.api_config = self.config_manager.get_azure_config()
+        elif self.api_type == 'openai':
+            self.api_config = self.config_manager.get_openai_config()
+        else:
+            raise ValueError(f"Invalid API type: {self.api_type}")
+        
         self.generation_settings = self.config_manager.get_generation_settings()
         self.output_settings = self.config_manager.get_output_settings()
         self.gpt_log_settings = self.config_manager.get_gpt_log_settings()
@@ -38,7 +46,8 @@ class ShareGPTGenerator:
         self.gpt_logger = GPTLogger(
             self.full_gpt_log_path, 
             self.gpt_log_settings['enable_logging'],
-            self.azure_config
+            self.api_config,
+            self.api_type
         )
         
         self.data_loader = DataLoader(
@@ -46,10 +55,11 @@ class ShareGPTGenerator:
         )
         
         self.conversation_generator = ConversationGenerator(
-            self.azure_config,
+            self.api_config,
             self.generation_settings,
             self.data_loader,
-            self.gpt_logger
+            self.gpt_logger,
+            self.api_type
         )
         
         self.progress_manager = ProgressManager(

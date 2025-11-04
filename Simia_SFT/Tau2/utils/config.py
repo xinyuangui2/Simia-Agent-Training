@@ -31,12 +31,25 @@ class ConfigManager:
             print(f"❌ Configuration file format error: {e}")
             raise
     
+    def get_api_type(self) -> str:
+        """Get API type (azure or openai)"""
+        return self.config.get('api_type', 'azure').lower()
+    
     def get_azure_config(self) -> Dict[str, Any]:
         """Get Azure configuration"""
         return {
             'azure_endpoint': self.config.get('azure_endpoint', ''),
             'api_version': self.config.get('api_version', '2024-08-01-preview'),
             'deployment': self.config.get('deployment', 'gpt-4o'),
+            'timeout': self.config.get('timeout', 30)
+        }
+    
+    def get_openai_config(self) -> Dict[str, Any]:
+        """Get OpenAI configuration"""
+        return {
+            'api_key': self.config.get('openai_api_key', ''),
+            'base_url': self.config.get('openai_base_url', 'https://api.openai.com/v1'),
+            'model': self.config.get('openai_model', 'gpt-4o'),
             'timeout': self.config.get('timeout', 30)
         }
     
@@ -106,9 +119,21 @@ class ConfigManager:
     def validate_config(self) -> bool:
         """Validate configuration integrity"""
         try:
-            azure_config = self.get_azure_config()
-            if not azure_config.get('azure_endpoint'):
-                print("⚠️  Configuration missing azure_endpoint")
+            api_type = self.get_api_type()
+            
+            # Validate API configuration based on type
+            if api_type == 'azure':
+                azure_config = self.get_azure_config()
+                if not azure_config.get('azure_endpoint'):
+                    print("⚠️  Configuration missing azure_endpoint")
+                    return False
+            elif api_type == 'openai':
+                openai_config = self.get_openai_config()
+                if not openai_config.get('api_key'):
+                    print("⚠️  Configuration missing openai_api_key")
+                    return False
+            else:
+                print(f"⚠️  Invalid api_type: {api_type}. Must be 'azure' or 'openai'")
                 return False
             
             gen_settings = self.get_generation_settings()
@@ -121,7 +146,7 @@ class ConfigManager:
                 print(f"⚠️  Sample DataFile does not exist: {sample_data_path}")
                 return False
             
-            print("✅ Configuration validation passed")
+            print(f"✅ Configuration validation passed (API type: {api_type})")
             return True
             
         except Exception as e:

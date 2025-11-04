@@ -15,20 +15,33 @@ unzip APIGen_5k_preprocessed_zip.zip
 ```
 
 
-Edit `config.json` to set generation parameters:
+Edit `config.json` to set generation parameters. Set `api_type` to either `"azure"` or `"openai"`. Fill in the relevant parameters for your chosen service and leave the other service's parameters blank.
 
+**Example for OpenAI API:**
 ```json
 {
-  "azure_endpoint": "your-endpoint",
+  "api_type": "openai",
+  "openai_api_key": "sk-your-api-key",
+  "openai_base_url": "https://api.openai.com/v1",
+  "openai_model": "gpt-5",
+  "azure_endpoint": "",
+  "api_version": "",
+  "deployment": "",
+  "sample_data_path": "APIGen_5k_preprocessed.json",
+}
+```
+
+**Example for Azure OpenAI:**
+```json
+{
+  "api_type": "azure",
+  "openai_api_key": "",
+  "openai_base_url": "",
+  "openai_model": "",
+  "azure_endpoint": "https://your-resource.openai.azure.com/",
   "api_version": "2025-04-01-preview",
   "deployment": "gpt-5",
   "sample_data_path": "APIGen_5k_preprocessed.json",
-  "generation_settings": {
-    "max_conversations": 10,
-    "temperature": 1,
-    "parallel_workers": 200,
-    "batch_size": 2500
-  }
 }
 ```
 

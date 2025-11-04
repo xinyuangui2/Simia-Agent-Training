@@ -14,10 +14,12 @@ from collections import Counter
 class GPTLogger:
     """GPT call logger"""
     
-    def __init__(self, log_file_path: str, enable_logging: bool = True, azure_config: Optional[Dict[str, Any]] = None):
+    def __init__(self, log_file_path: str, enable_logging: bool = True, 
+                 api_config: Optional[Dict[str, Any]] = None, api_type: str = 'azure'):
         self.log_file_path = log_file_path
         self.enable_logging = enable_logging
-        self.azure_config = azure_config or {}
+        self.api_config = api_config or {}
+        self.api_type = api_type.lower()
         
         if self.enable_logging:
             self.init_log_file()
@@ -26,16 +28,26 @@ class GPTLogger:
     def init_log_file(self):
         """Initialize GPT log file"""
         try:
-
             if not os.path.exists(self.log_file_path):
                 with open(self.log_file_path, 'w', encoding='utf-8') as f:
+                    # Build config info based on API type
+                    if self.api_type == 'azure':
+                        config_info = {
+                            "api_type": "azure",
+                            "model": self.api_config.get('deployment', 'gpt-4o'),
+                            "api_version": self.api_config.get('api_version', '2024-08-01-preview')
+                        }
+                    else:  # openai
+                        config_info = {
+                            "api_type": "openai",
+                            "model": self.api_config.get('model', 'gpt-4o'),
+                            "base_url": self.api_config.get('base_url', 'https://api.openai.com/v1')
+                        }
+                    
                     header = {
                         "log_type": "gpt_outputs",
                         "created_at": datetime.now().isoformat(),
-                        "config": {
-                            "model": self.azure_config.get('deployment', 'gpt-4o'),
-                            "api_version": self.azure_config.get('api_version', '2024-08-01-preview')
-                        }
+                        "config": config_info
                     }
                     f.write(json.dumps(header, ensure_ascii=False) + '\n')
         except Exception as e:
@@ -262,6 +274,6 @@ class GPTLogger:
 
 
 def create_gpt_logger(log_file_path: str, enable_logging: bool = True, 
-                     azure_config: Optional[Dict[str, Any]] = None) -> GPTLogger:
+                     api_config: Optional[Dict[str, Any]] = None, api_type: str = 'azure') -> GPTLogger:
     """Convenience function to create GPT logger"""
-    return GPTLogger(log_file_path, enable_logging, azure_config) 
+    return GPTLogger(log_file_path, enable_logging, api_config, api_type) 

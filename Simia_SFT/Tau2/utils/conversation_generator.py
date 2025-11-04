@@ -7,7 +7,7 @@ Core logic for handling GPT calls and Agent Trajectory generation
 import time
 import json
 from typing import Dict, List, Any, Optional
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 from azure.identity import AzureCliCredential, get_bearer_token_provider
 
 from .data_loader import DataLoader
@@ -17,32 +17,39 @@ from .gpt_logger import GPTLogger
 class ConversationGenerator:
     """Agent Trajectory conversation generator"""
     
-    def __init__(self, azure_config: Dict[str, Any], generation_settings: Dict[str, Any], 
-                 data_loader: DataLoader, gpt_logger: GPTLogger):
-        self.azure_config = azure_config
+    def __init__(self, api_config: Dict[str, Any], generation_settings: Dict[str, Any], 
+                 data_loader: DataLoader, gpt_logger: GPTLogger, api_type: str = 'azure'):
+        self.api_config = api_config
+        self.api_type = api_type.lower()
         self.generation_settings = generation_settings
         self.data_loader = data_loader
         self.gpt_logger = gpt_logger
         
-
-        credential = AzureCliCredential()
-        token_provider = get_bearer_token_provider(credential, "https://cognitiveservices.azure.com/.default")
+        # Initialize client based on API type
+        if self.api_type == 'azure':
+            credential = AzureCliCredential()
+            token_provider = get_bearer_token_provider(credential, "https://cognitiveservices.azure.com/.default")
+            
+            self.client = AzureOpenAI(
+                azure_ad_token_provider=token_provider,
+                azure_endpoint=api_config.get('azure_endpoint', ''),
+                api_version=api_config.get('api_version', '2024-08-01-preview')
+            )
+            self.model = api_config.get('deployment', 'gpt-4o')
+        elif self.api_type == 'openai':
+            self.client = OpenAI(
+                api_key=api_config.get('api_key', ''),
+                base_url=api_config.get('base_url', 'https://api.openai.com/v1')
+            )
+            self.model = api_config.get('model', 'gpt-4o')
+        else:
+            raise ValueError(f"Invalid api_type: {self.api_type}. Must be 'azure' or 'openai'")
         
-        self.client = AzureOpenAI(
-            azure_ad_token_provider=token_provider,
-            azure_endpoint=azure_config.get('azure_endpoint', ''),
-            api_version=azure_config.get('api_version', '2024-08-01-preview')
-        )
-        
-
         self.temperature = generation_settings.get('temperature', 1)
         self.max_tokens = generation_settings.get('max_tokens', 1000)
         self.retry_attempts = generation_settings.get('retry_attempts', 3)
         self.rate_limit_delay = generation_settings.get('rate_limit_delay', 0.1)
-        
-
-        self.deployment = azure_config.get('deployment', 'gpt-4o')
-        self.timeout = azure_config.get('timeout', 30)
+        self.timeout = api_config.get('timeout', 30)
         
 
     
@@ -130,15 +137,33 @@ class ConversationGenerator:
         
         start_time = time.time()
         try:
-            response = self.client.chat.completions.create(
-                model=self.deployment,
-                messages=[
+            # Prepare API call parameters
+            call_params = {
+                "model": self.model,
+                "messages": [
                     {"role": "user", "content": prompt}
                 ],
-                temperature=self.temperature,
-                max_completion_tokens=self.max_tokens,
-                timeout=self.timeout
+                "temperature": self.temperature,
+                "timeout": self.timeout
+            }
+            
+            # Use max_completion_tokens for:
+            # 1. Azure API (all models)
+            # 2. OpenAI newer models (gpt-4o, gpt-4-turbo, o1, and future models)
+            # Use max_tokens for older OpenAI models (gpt-3.5-turbo, older gpt-4 variants)
+            model_lower = self.model.lower()
+            use_completion_tokens = (
+                self.api_type == 'azure' or
+                'o4' in model_lower or
+                'gpt-5' in model_lower
             )
+            
+            if use_completion_tokens:
+                call_params["max_completion_tokens"] = self.max_tokens
+            else:
+                call_params["max_tokens"] = self.max_tokens
+            
+            response = self.client.chat.completions.create(**call_params)
             
             duration = time.time() - start_time
             response_content = response.choices[0].message.content
@@ -521,7 +546,7 @@ ASSISTANT: [assistant reply content]
         return conversation
 
 
-def create_conversation_generator(azure_config: Dict[str, Any], generation_settings: Dict[str, Any], 
-                                data_loader: DataLoader, gpt_logger: GPTLogger) -> ConversationGenerator:
+def create_conversation_generator(api_config: Dict[str, Any], generation_settings: Dict[str, Any], 
+                                data_loader: DataLoader, gpt_logger: GPTLogger, api_type: str = 'azure') -> ConversationGenerator:
     """Convenience function to create conversation generator"""
-    return ConversationGenerator(azure_config, generation_settings, data_loader, gpt_logger)
+    return ConversationGenerator(api_config, generation_settings, data_loader, gpt_logger, api_type)
