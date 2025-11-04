@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+mlruns/
+outputs/
+components/ragen/src/_environments/
+components/ragen/src/default_config/user_config.yaml
+components/ragen/src/mlruns/
+components/ragen/src/outputs/
+/config.json
+test_ssh*
+ppo_aml*
+local_workdir
+.vscode/
+
+# Environment variables - DO NOT commit to git
+.env
+
+# Additional output directories
+checkpoints/
+results/
+training_record/
+
+# Logs
+*.log
+wandb/
