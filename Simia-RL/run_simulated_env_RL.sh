@@ -1,17 +1,55 @@
 #!/bin/bash
-# Please set these environment variables before running the script:
-export AZURE_OPENAI_ENDPOINT=""
+# ============================================================================
+# General Simulated Environment PPO Training Script
+# ============================================================================
+# This script supports both Azure OpenAI and OpenAI API
+#
+# Usage:
+#   1. For Azure OpenAI:
+#      - Set API_TYPE="azure"
+#      - Set AZURE_OPENAI_ENDPOINT
+#      - Run: az login (for authentication)
+#
+#   2. For OpenAI API:
+#      - Set API_TYPE="openai"
+#      - Set OPENAI_API_KEY
+#
+#   3. Run: bash run_simulated_env_RL.sh
+# ============================================================================
+
+# API Configuration - Choose ONE:
+# Option 1: Azure OpenAI
+# export API_TYPE="azure" 
+# export AZURE_OPENAI_ENDPOINT=""
+
+# Option 2: OpenAI API (uncomment to use)
+export API_TYPE="openai"
+export OPENAI_API_KEY=""
+
 export WANDB_API_KEY=""
 
 set -e
 
 echo "Starting General Simulated Environment PPO training..."
+echo "API Type: ${API_TYPE:-azure}"
 
-if [ -z "$AZURE_OPENAI_ENDPOINT" ]; then
-    echo "Error: AZURE_OPENAI_ENDPOINT environment variable not set"
+# Validate API configuration based on type
+if [ "${API_TYPE:-azure}" == "azure" ]; then
+    if [ -z "$AZURE_OPENAI_ENDPOINT" ]; then
+        echo "Error: AZURE_OPENAI_ENDPOINT environment variable not set"
+        exit 1
+    fi
+    echo "Using Azure OpenAI: $AZURE_OPENAI_ENDPOINT"
+elif [ "${API_TYPE}" == "openai" ]; then
+    if [ -z "$OPENAI_API_KEY" ]; then
+        echo "Error: OPENAI_API_KEY environment variable not set"
+        exit 1
+    fi
+    echo "Using OpenAI API"
+else
+    echo "Error: API_TYPE must be 'azure' or 'openai'"
     exit 1
 fi
-
 
 if [ -z "$WANDB_API_KEY" ]; then
     echo "Error: WANDB_API_KEY environment variable not set"
@@ -121,9 +159,13 @@ custom_envs:
       output_dir: "$RESULTS_DIR/simulated_env_tau2/output"
       train_data_path: "$SCRIPT_DIR/APIGen_5k_processed.json"
       training_record_dir: "$CHECKPOINTS_DIR/simulated_env_tau2/training_record"
-      azure_endpoint: "$AZURE_OPENAI_ENDPOINT"
+      api_type: "${API_TYPE:-azure}"
+      azure_endpoint: "${AZURE_OPENAI_ENDPOINT:-}"
       api_version: "2025-04-01-preview"
       deployment: "gpt-5"
+      openai_api_key: "${OPENAI_API_KEY:-}"
+      openai_base_url: "https://api.openai.com/v1"
+      openai_model: "gpt-5"
       temperature: 1.0
       max_tokens: 60000
       retry_attempts: 3
