@@ -103,7 +103,43 @@ To use with LLaMA Factory, add an entry to `dataset_info.json`:
 }
 ```
 
+Then create a YAML configuration file:
+```yaml
+### model
+model_name_or_path: Qwen/Qwen2.5-7B-Instruct
 
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+deepspeed: examples/deepspeed/ds_z3_config.json
+flash_attn: fa2
+neat_packing: true
+
+### dataset
+dataset: yourdataset
+template: qwen
+overwrite_cache: true
+preprocessing_num_workers: 32
+cutoff_len: 12000
+
+### output
+output_dir: saves/Qwen2.5-7B-Instruct/yourdataset
+logging_steps: 1
+save_steps: 50
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: true
+
+### train
+lr_scheduler_type: cosine
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 2
+learning_rate: 0.000005
+num_train_epochs: 2
+bf16: true
+ddp_timeout: 180000000
+```
 
 
 ## Output Files
