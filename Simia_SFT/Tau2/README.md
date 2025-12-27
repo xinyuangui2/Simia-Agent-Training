@@ -93,8 +93,8 @@ The processed dataset can be directly used for supervised fine-tuning with frame
 To use with LLaMA Factory, add an entry to `dataset_info.json`:
 
 ```json
-"tau2_10_gpt": {
-    "file_name": "Simia-Agent-Training/Simia_SFT/Tau2/output/tau2_10_gpt5_processed.json",
+"tau2_90k": {
+    "file_name": your_file_path,
     "formatting": "sharegpt",
     "columns": {
         "messages": "conversations",
