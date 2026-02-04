@@ -66,13 +66,14 @@ RUN pip install --no-cache-dir \
     IPython \
     matplotlib \
     gym \
+    gym-sokoban \
     peft \
     accelerate \
     codetiming \
     datasets \
     dill \
     hydra-core \
-    numpy \
+    "numpy<2.3" \
     pandas \
     pybind11 \
     "ray[default]>=2.10" \
