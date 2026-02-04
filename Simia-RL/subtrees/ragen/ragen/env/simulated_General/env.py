@@ -156,7 +156,18 @@ class SimulatedGeneralEnv(BaseEnv):
     def _setup_api_client(self) -> None:
         """Initialize OpenAI or Azure OpenAI client based on config."""
         api_type = getattr(self.config, 'api_type', 'azure').lower()
-        
+
+        # Check for mock mode
+        self.mock_mode = getattr(self.config, 'mock_mode', False) or api_type == 'mock'
+        if self.mock_mode:
+            self.client = None
+            self.model = "mock"
+            self.mock_terminate_after_steps = getattr(self.config, 'mock_terminate_after_steps', 3)
+            self.mock_success_rate = getattr(self.config, 'mock_success_rate', 0.5)
+            self.logger.info("Mock mode enabled (terminate_after=%d, success_rate=%.2f)",
+                           self.mock_terminate_after_steps, self.mock_success_rate)
+            return
+
         try:
             if api_type == 'azure':
                 credential = AzureCliCredential()
@@ -178,7 +189,7 @@ class SimulatedGeneralEnv(BaseEnv):
                 self.model = getattr(self.config, 'openai_model', 'gpt-4o')
                 self.logger.info("OpenAI client initialized (model=%s)", self.model)
             else:
-                raise ValueError(f"Invalid api_type: {api_type}. Must be 'azure' or 'openai'")
+                raise ValueError(f"Invalid api_type: {api_type}. Must be 'azure', 'openai', or 'mock'")
         except Exception as exc:
             self.logger.error("API client initialization failed: %s", exc)
             self.client = None
@@ -551,7 +562,55 @@ Please perform the evaluation:"""
     # ------------------------------------------------------------------
     # GPT interaction helpers
     # ------------------------------------------------------------------
+    def _mock_gpt_response(self, messages: List[Dict[str, str]]) -> str:
+        """
+        Generate mock responses for testing without API calls.
+        This simulates GPT responses based on the prompt type.
+        """
+        prompt = messages[-1].get("content", "") if messages else ""
+
+        # Detect if this is an evaluation request
+        if "evaluate the RL model's performance" in prompt.lower() or "evaluation criteria" in prompt.lower():
+            # Mock evaluation response
+            success = random.random() < self.mock_success_rate
+            reward = 1 if success else 0
+            reasoning = (
+                "Mock evaluation: Task completed successfully with correct tool call format."
+                if success else
+                "Mock evaluation: Task failed due to incorrect format or policy violation."
+            )
+            return json.dumps({"reward": reward, "reasoning": reasoning})
+
+        # Detect if this is an environment response request
+        if "simulation environment" in prompt.lower() or "simulate the human" in prompt.lower():
+            # Check if we should terminate based on step count
+            if self.current_step >= self.mock_terminate_after_steps:
+                return "[TERMINATE] Mock: Task completed after reaching step limit."
+
+            # Generate mock environment responses
+            mock_responses = [
+                "I understand. Please proceed with the next step.",
+                "<tool_response>\n{\"status\": \"success\", \"data\": {\"mock\": true, \"result\": \"Sample data returned\"}}\n</tool_response>",
+                "Thank you for the information. What else can you help me with?",
+                "The tool executed successfully. Here are the results: Mock result data for testing purposes.",
+                "Please continue with the task.",
+            ]
+            return random.choice(mock_responses)
+
+        # Default mock response for first message or unknown prompts
+        mock_first_messages = [
+            "Hello, I need help with a task. Can you assist me?",
+            "Hi, I would like to search for some information.",
+            "I need to book a flight. Can you help?",
+            "Please help me find available products.",
+        ]
+        return random.choice(mock_first_messages)
+
     def _call_gpt(self, messages: List[Dict[str, str]]) -> str:
+        # Use mock mode if enabled
+        if self.mock_mode:
+            return self._mock_gpt_response(messages)
+
         if not self.client:
             raise RuntimeError("API client is not initialized")
 

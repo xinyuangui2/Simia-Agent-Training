@@ -2,7 +2,7 @@
 # ============================================================================
 # General Simulated Environment PPO Training Script
 # ============================================================================
-# This script supports both Azure OpenAI and OpenAI API
+# This script supports Azure OpenAI, OpenAI API, and Mock mode (for testing)
 #
 # Usage:
 #   1. For Azure OpenAI:
@@ -14,17 +14,28 @@
 #      - Set API_TYPE="openai"
 #      - Set OPENAI_API_KEY
 #
-#   3. Run: bash run_simulated_env_RL.sh
+#   3. For Mock mode (testing without API):
+#      - Set API_TYPE="mock"
+#      - No API key required
+#      - Optionally set MOCK_TERMINATE_AFTER_STEPS (default: 3)
+#      - Optionally set MOCK_SUCCESS_RATE (default: 0.5)
+#
+#   4. Run: bash run_simulated_env_RL.sh
 # ============================================================================
 
 # API Configuration - Choose ONE:
 # Option 1: Azure OpenAI
-# export API_TYPE="azure" 
+# export API_TYPE="azure"
 # export AZURE_OPENAI_ENDPOINT=""
 
 # Option 2: OpenAI API (uncomment to use)
 export API_TYPE="openai"
 export OPENAI_API_KEY=""
+
+# Option 3: Mock mode for testing (uncomment to use)
+# export API_TYPE="mock"
+# export MOCK_TERMINATE_AFTER_STEPS=3
+# export MOCK_SUCCESS_RATE=0.5
 
 export WANDB_API_KEY=""
 
@@ -46,8 +57,12 @@ elif [ "${API_TYPE}" == "openai" ]; then
         exit 1
     fi
     echo "Using OpenAI API"
+elif [ "${API_TYPE}" == "mock" ]; then
+    echo "Using Mock mode (no API calls)"
+    echo "  - Terminate after steps: ${MOCK_TERMINATE_AFTER_STEPS:-3}"
+    echo "  - Success rate: ${MOCK_SUCCESS_RATE:-0.5}"
 else
-    echo "Error: API_TYPE must be 'azure' or 'openai'"
+    echo "Error: API_TYPE must be 'azure', 'openai', or 'mock'"
     exit 1
 fi
 
@@ -173,6 +188,10 @@ custom_envs:
       max_simulation_steps: 100
       reward_on_success: 1.0
       reward_on_failure: 0.0
+      # Mock mode settings (only used when api_type="mock")
+      mock_mode: false
+      mock_terminate_after_steps: ${MOCK_TERMINATE_AFTER_STEPS:-3}
+      mock_success_rate: ${MOCK_SUCCESS_RATE:-0.5}
 
 aml_checkpoints_path: "$CHECKPOINTS_DIR"
 aml_output_dir: "$RESULTS_DIR"
