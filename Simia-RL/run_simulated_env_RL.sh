@@ -66,10 +66,10 @@ else
     exit 1
 fi
 
-if [ -z "$WANDB_API_KEY" ]; then
-    echo "Error: WANDB_API_KEY environment variable not set"
-    exit 1
-fi
+# if [ -z "$WANDB_API_KEY" ]; then
+#     echo "Error: WANDB_API_KEY environment variable not set"
+#     exit 1
+# fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -137,7 +137,8 @@ trainer:
   total_training_steps: 64
   save_freq: 4
   default_local_dir: "$CHECKPOINTS_DIR"
-  logger: ['console', 'wandb']
+  # logger: ['console', 'wandb']  # Uncomment to enable WandB logging
+  logger: ['console']
   generations_to_log_to_wandb:
     train: 32
     val: 20
@@ -218,7 +219,7 @@ if ! python -c "import wandb" 2>/dev/null; then
 fi
 
 echo "Initializing wandb..."
-wandb login $WANDB_API_KEY
+# wandb login $WANDB_API_KEY
 cd "$SCRIPT_DIR/components/ragen/src"
 python train.py \
     --config-name=user_config 
