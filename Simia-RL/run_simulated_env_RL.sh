@@ -83,8 +83,8 @@ mkdir -p "$RESULTS_DIR"
 
 echo "Output directory created: $OUTPUT_DIR"
 
-echo "Cleaning Ray processes..."
-pkill -f ray || echo "No Ray processes found"
+# echo "Cleaning Ray processes..."
+# pkill -f ray || echo "No Ray processes found"
 sleep 2
 CONFIG_FILE="$SCRIPT_DIR/simulated_env_config.yaml"
 cat > "$CONFIG_FILE" << EOF
