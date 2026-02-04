@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
     vim \
+    sudo \
     build-essential \
     software-properties-common \
     tesseract-ocr \
