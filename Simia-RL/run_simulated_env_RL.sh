@@ -2,7 +2,7 @@
 # ============================================================================
 # General Simulated Environment PPO Training Script
 # ============================================================================
-# This script supports both Azure OpenAI and OpenAI API
+# This script supports Azure OpenAI, OpenAI API, and Mock mode (for testing)
 #
 # Usage:
 #   1. For Azure OpenAI:
@@ -14,17 +14,28 @@
 #      - Set API_TYPE="openai"
 #      - Set OPENAI_API_KEY
 #
-#   3. Run: bash run_simulated_env_RL.sh
+#   3. For Mock mode (testing without API):
+#      - Set API_TYPE="mock"
+#      - No API key required
+#      - Optionally set MOCK_TERMINATE_AFTER_STEPS (default: 3)
+#      - Optionally set MOCK_SUCCESS_RATE (default: 0.5)
+#
+#   4. Run: bash run_simulated_env_RL.sh
 # ============================================================================
 
 # API Configuration - Choose ONE:
 # Option 1: Azure OpenAI
-# export API_TYPE="azure" 
+# export API_TYPE="azure"
 # export AZURE_OPENAI_ENDPOINT=""
 
 # Option 2: OpenAI API (uncomment to use)
-export API_TYPE="openai"
-export OPENAI_API_KEY=""
+# export API_TYPE="openai"
+# export OPENAI_API_KEY=""
+
+# Option 3: Mock mode for testing (uncomment to use)
+export API_TYPE="mock"
+export MOCK_TERMINATE_AFTER_STEPS=3
+export MOCK_SUCCESS_RATE=0.5
 
 export WANDB_API_KEY=""
 
@@ -46,15 +57,19 @@ elif [ "${API_TYPE}" == "openai" ]; then
         exit 1
     fi
     echo "Using OpenAI API"
+elif [ "${API_TYPE}" == "mock" ]; then
+    echo "Using Mock mode (no API calls)"
+    echo "  - Terminate after steps: ${MOCK_TERMINATE_AFTER_STEPS:-3}"
+    echo "  - Success rate: ${MOCK_SUCCESS_RATE:-0.5}"
 else
-    echo "Error: API_TYPE must be 'azure' or 'openai'"
+    echo "Error: API_TYPE must be 'azure', 'openai', or 'mock'"
     exit 1
 fi
 
-if [ -z "$WANDB_API_KEY" ]; then
-    echo "Error: WANDB_API_KEY environment variable not set"
-    exit 1
-fi
+# if [ -z "$WANDB_API_KEY" ]; then
+#     echo "Error: WANDB_API_KEY environment variable not set"
+#     exit 1
+# fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -68,8 +83,8 @@ mkdir -p "$RESULTS_DIR"
 
 echo "Output directory created: $OUTPUT_DIR"
 
-echo "Cleaning Ray processes..."
-pkill -f ray || echo "No Ray processes found"
+# echo "Cleaning Ray processes..."
+# pkill -f ray || echo "No Ray processes found"
 sleep 2
 CONFIG_FILE="$SCRIPT_DIR/simulated_env_config.yaml"
 cat > "$CONFIG_FILE" << EOF
@@ -122,7 +137,8 @@ trainer:
   total_training_steps: 64
   save_freq: 4
   default_local_dir: "$CHECKPOINTS_DIR"
-  logger: ['console', 'wandb']
+  # logger: ['console', 'wandb']  # Uncomment to enable WandB logging
+  logger: ['console']
   generations_to_log_to_wandb:
     train: 32
     val: 20
@@ -173,6 +189,10 @@ custom_envs:
       max_simulation_steps: 100
       reward_on_success: 1.0
       reward_on_failure: 0.0
+      # Mock mode settings (only used when api_type="mock")
+      mock_mode: false
+      mock_terminate_after_steps: ${MOCK_TERMINATE_AFTER_STEPS:-3}
+      mock_success_rate: ${MOCK_SUCCESS_RATE:-0.5}
 
 aml_checkpoints_path: "$CHECKPOINTS_DIR"
 aml_output_dir: "$RESULTS_DIR"
@@ -199,7 +219,7 @@ if ! python -c "import wandb" 2>/dev/null; then
 fi
 
 echo "Initializing wandb..."
-wandb login $WANDB_API_KEY
+# wandb login $WANDB_API_KEY
 cd "$SCRIPT_DIR/components/ragen/src"
 python train.py \
     --config-name=user_config 

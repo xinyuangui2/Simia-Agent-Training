@@ -26,11 +26,54 @@ az login  # Azure authentication
 export API_TYPE="openai"
 export OPENAI_API_KEY="sk-your-api-key-here"
 
-# Set WandB 
+# Option C: Mock Mode (for testing without API costs)
+export API_TYPE="mock"
+export MOCK_TERMINATE_AFTER_STEPS=3  # Optional: steps before termination (default: 3)
+export MOCK_SUCCESS_RATE=0.5         # Optional: probability of success reward (default: 0.5)
+
+# Set WandB (optional in mock mode - can be disabled in run_simulated_env_RL.sh)
 export WANDB_API_KEY="your_wandb_api_key"
 
 # 3. Start training (auto-generates config and starts training)
 bash run_simulated_env_RL.sh
+```
+
+## Mock Mode
+
+Mock mode allows you to test the full training pipeline without making any API calls. This is useful for:
+- Testing the training infrastructure
+- Debugging configuration issues
+- Development without incurring API costs
+
+### How Mock Mode Works
+
+| Component | Behavior |
+|-----------|----------|
+| First message | Returns random greeting/request |
+| Environment response | Returns mock tool results or "Please proceed" |
+| Termination | After `MOCK_TERMINATE_AFTER_STEPS` steps |
+| Evaluation | Returns reward 0 or 1 based on `MOCK_SUCCESS_RATE` |
+
+### Mock Mode Configuration
+
+In `run_simulated_env_RL.sh`, set:
+
+```bash
+export API_TYPE="mock"
+export MOCK_TERMINATE_AFTER_STEPS=3   # Number of turns before ending episode
+export MOCK_SUCCESS_RATE=0.5          # 50% chance of reward=1
+```
+
+Or edit the `env_config` section in the YAML:
+
+```yaml
+custom_envs:
+  GeneralSimulated:
+    env_config:
+      api_type: "mock"
+      mock_mode: true
+      mock_terminate_after_steps: 3
+      mock_success_rate: 0.5
 ```
 
 ## Configuration

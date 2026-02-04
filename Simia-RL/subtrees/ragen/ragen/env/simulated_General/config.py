@@ -16,7 +16,12 @@ class SimulatedEnvConfig:
     training_record_dir: str = "checkpoints/general-simulated-tau2/training_record"
 
     # API configuration
-    api_type: str = "azure"  # "azure" or "openai"
+    api_type: str = "azure"  # "azure", "openai", or "mock"
+
+    # Mock mode configuration (for testing without API)
+    mock_mode: bool = False  # Set to True to use mock responses instead of real API
+    mock_terminate_after_steps: int = 3  # Number of steps before mock terminates
+    mock_success_rate: float = 0.5  # Probability of success reward in mock mode
     
     # Azure OpenAI configuration
     azure_endpoint: str = "${AZURE_OPENAI_ENDPOINT}"
