@@ -29,13 +29,13 @@
 # export AZURE_OPENAI_ENDPOINT=""
 
 # Option 2: OpenAI API (uncomment to use)
-export API_TYPE="openai"
-export OPENAI_API_KEY=""
+# export API_TYPE="openai"
+# export OPENAI_API_KEY=""
 
 # Option 3: Mock mode for testing (uncomment to use)
-# export API_TYPE="mock"
-# export MOCK_TERMINATE_AFTER_STEPS=3
-# export MOCK_SUCCESS_RATE=0.5
+export API_TYPE="mock"
+export MOCK_TERMINATE_AFTER_STEPS=3
+export MOCK_SUCCESS_RATE=0.5
 
 export WANDB_API_KEY=""
 

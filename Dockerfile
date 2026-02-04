@@ -31,6 +31,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
 
+# Create ray user (required by Ray cluster)
+RUN useradd -ms /bin/bash ray \
+    && echo "ray ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
 # Install pip for Python 3.12
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
 
@@ -71,7 +75,7 @@ RUN pip install --no-cache-dir \
     numpy \
     pandas \
     pybind11 \
-    "ray>=2.10" \
+    "ray[default]>=2.10" \
     tensordict==0.6.2 \
     transformers \
     wandb \
@@ -110,11 +114,8 @@ RUN pip install --no-cache-dir \
 # Install additional dependencies for MLflow and Azure
 RUN pip install --no-cache-dir --ignore-installed azureml-mlflow mlflow
 
-# Install specific versions of ray and opentelemetry
-RUN pip install --no-cache-dir \
-    ray==2.49.1 \
-    opentelemetry-api==1.26.0 \
-    opentelemetry-sdk==1.26.0
+# Install specific versions of ray (opentelemetry will be installed as dependency)
+RUN pip install --no-cache-dir "ray[default]==2.49.1"
 
 # Install LLaMA Factory for SFT training
 RUN pip install --no-cache-dir llamafactory
