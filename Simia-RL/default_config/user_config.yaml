@@ -23,7 +23,7 @@ actor_rollout_ref:
     max_num_batched_tokens: 9000
     tensor_model_parallel_size: 1
     tp_size_check: False
-    gpu_memory_utilization: 0.5
+    gpu_memory_utilization: 0.8
     temperature: 0.7
     rollout_filter_ratio: 1.0
     val_kwargs:

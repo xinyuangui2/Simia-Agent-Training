@@ -208,6 +208,11 @@ export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
 export PYTHONPATH="${PYTHONPATH}:${REPO_ROOT}:${REPO_ROOT}/subtrees/ragen"
 export WANDB_PROJECT="simulated_env_RL"
 
+# NCCL settings to avoid distributed hangs
+export NCCL_DEBUG=WARN
+export NCCL_TIMEOUT=1800
+export TORCH_DISTRIBUTED_DEBUG=DETAIL
+
 if ! python -c "import gymnasium" 2>/dev/null; then
     echo "Installing gymnasium..."
     pip install gymnasium

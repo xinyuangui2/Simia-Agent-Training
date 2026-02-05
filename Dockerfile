@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     vim \
     sudo \
+    tmux \
+    unzip \
     build-essential \
     software-properties-common \
     tesseract-ocr \
