@@ -113,7 +113,7 @@ actor_rollout_ref:
     max_num_batched_tokens: 9000
     tensor_model_parallel_size: 1
     tp_size_check: False
-    gpu_memory_utilization: 0.5
+    gpu_memory_utilization: 0.8
     temperature: 0.7
     rollout_filter_ratio: 1.0
     val_kwargs:
@@ -207,6 +207,11 @@ echo "Config file copied to: $SCRIPT_DIR/components/ragen/src/default_config/use
 export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
 export PYTHONPATH="${PYTHONPATH}:${REPO_ROOT}:${REPO_ROOT}/subtrees/ragen"
 export WANDB_PROJECT="simulated_env_RL"
+
+# NCCL settings to avoid distributed hangs
+export NCCL_DEBUG=WARN
+export NCCL_TIMEOUT=1800
+export TORCH_DISTRIBUTED_DEBUG=DETAIL
 
 if ! python -c "import gymnasium" 2>/dev/null; then
     echo "Installing gymnasium..."
