@@ -46,7 +46,6 @@ trainer:
   test_freq: 10000
   total_training_steps: 64
   save_freq: 4
-
   default_local_dir: "/workspace/Simia-Agent-Training/Simia-RL/outputs/checkpoints/Simia-RL-8B-tau2-APIGen-MT"
   # logger: ['console', 'wandb']  # Uncomment to enable WandB logging
   logger: ['console']
@@ -86,7 +85,6 @@ custom_envs:
       output_dir: "/workspace/Simia-Agent-Training/Simia-RL/outputs/training_records/Simia-RL-8B-tau2-APIGen-MT/simulated_env_tau2/output"
       train_data_path: "/workspace/Simia-Agent-Training/Simia-RL/APIGen_5k_processed.json"
       training_record_dir: "/workspace/Simia-Agent-Training/Simia-RL/outputs/checkpoints/Simia-RL-8B-tau2-APIGen-MT/simulated_env_tau2/training_record"
-
       api_type: "mock"
       azure_endpoint: ""
       api_version: "2025-04-01-preview"
@@ -106,7 +104,5 @@ custom_envs:
       mock_terminate_after_steps: 3
       mock_success_rate: 0.5
 
-
 aml_checkpoints_path: "/workspace/Simia-Agent-Training/Simia-RL/outputs/checkpoints/Simia-RL-8B-tau2-APIGen-MT"
 aml_output_dir: "/workspace/Simia-Agent-Training/Simia-RL/outputs/training_records/Simia-RL-8B-tau2-APIGen-MT"
-

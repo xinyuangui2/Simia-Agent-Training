@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     tmux \
     unzip \
+    openssh-server \
+    openssh-client \
     build-essential \
     software-properties-common \
     tesseract-ocr \
@@ -125,6 +127,9 @@ RUN pip install --no-cache-dir llamafactory
 
 # Install OpenAI SDK for API interactions
 RUN pip install --no-cache-dir openai
+
+# Re-pin numpy (later installs like mlflow/ray/llamafactory can upgrade it)
+RUN pip install --no-cache-dir "numpy<2.3"
 
 # Unzip preprocessed data files
 RUN cd Simia_SFT/Tau2 && unzip -o APIGen_5k_preprocessed_zip.zip || true
